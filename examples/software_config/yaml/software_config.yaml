@@ -1,0 +1,149 @@
+---
+heat_template_version: 2018-08-31
+
+description: |
+  test
+
+parameters:
+  name:
+    type: string
+  image_id:
+    type: string
+    label: Instance ID (no, no lookup, sorry)
+  network_id:
+    type: string
+  subnet_id:
+    type: string
+  flavor:
+    type: string
+    label: Instance flavor
+    default: c1.c1r1
+  key_name:
+    type: string
+    label: SSH key
+  volume_size:
+    type: number
+    label: Size of the volume. Default 10GB.
+    default: 10
+  security_groups:
+    type: comma_delimited_list
+    label: List of security group IDs
+  lb_pool_id:
+    type: string
+    label: Load balancer pool to associate with
+  protocol_port:
+    type: number
+    default: 80
+    label: "Host port used for connections. Default: 80"
+  ip_address:
+    type: string
+
+resources:
+  cloud_init:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config:
+        write_files:
+          - content: |
+              [Unit]
+              Description=Openstack Heat Agent
+              # Network-online means that things should work as expected. Should.
+              Wants=network-online.target cloud-init.target
+              After=network-online.target
+              
+              [Service]
+              User=root
+              
+              Type=simple
+              WorkingDirectory=/opt/os-heat-agent/
+              ExecStart=/usr/local/bin/os_heat_agent -l debug
+              # Restart stuff
+              
+              Restart=always
+              # Wait 10 seconds to restart
+              RestartSec=10
+              
+              [Install]
+              WantedBy=multi-user.target
+            path: /lib/systemd/system/os-heat-agent.service
+        package_update: true
+        packages:
+          - jq
+          - python-is-python3
+          - python3-boto3
+          - httpie
+          - python3-click
+          - nginx
+        runcmd:
+          - [ mkdir, -p, /opt/os-heat-agent/ ]
+          - [ apt-get, -y, --no-install-recommends, install, 'python3-pip']
+          - [ pip, install, git+https://github.com/Eiara/os-heat-agent.git]
+          - [ systemctl, daemon-reload ]
+          - [ systemctl, start, nginx ]
+          - [ systemctl, start, os-heat-agent ]
+          - [ systemctl, enable, os-heat-agent ]
+  config:
+    type: "OS::Heat::SoftwareConfig"
+    properties:
+      config: |
+        #!/bin/bash
+        code=0
+        while [ $code -ne 200 ]; do
+          sleep 10
+          code=$(/usr/bin/curl -i -o /dev/null --silent -w "%{http_code}" $url)
+        done
+      options:
+        # Required
+        os_heat_agent_tool: /usr/bin/bash
+        os_heat_agent_serialize: true
+      inputs:
+        - name: envar_url
+          type: String
+          description: "URL to ping for health check, to verify that the node is online."
+          
+      outputs:
+        # Required
+        - name: "os_heat_agent_is_error"
+          description: "Did the job fail?"
+          type: Boolean
+          error_output: true
+  deployment:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      server: { get_resource: server }
+      actions: ["CREATE", "UPDATE"]
+      config: { get_resource: config }
+      input_values:
+        envar_url: http://localhost:80/
+      signal_transport: CFN_SIGNAL
+  server:
+    type: OS::Nova::Server
+    properties:
+      name: {get_param: name}
+      flavor: {get_param: flavor}
+      key_name: {get_param: key_name}
+      networks:
+        - port: {get_resource: instance_port}
+      image: {get_param: image_id}
+      user_data_format: SOFTWARE_CONFIG
+      user_data: {get_resource: cloud_init}
+  instance_port:
+      type: OS::Neutron::Port
+      properties:
+        network: {get_param: network_id}
+        security_groups: {get_param: security_groups}
+        fixed_ips:
+          - subnet: {get_param: subnet_id}
+  pool_member:
+    type: OS::Octavia::PoolMember
+    depends_on: deployment
+    properties:
+      address: {get_attr: [instance_port, fixed_ips, 0, ip_address]}
+      pool: { get_param: lb_pool_id }
+      protocol_port: { get_param: protocol_port }
+      subnet: { get_param: subnet_id }
+  associate:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: { get_param: ip_address }
+      port_id: { get_resource: instance_port }
