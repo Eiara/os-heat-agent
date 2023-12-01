@@ -1,0 +1,86 @@
+{
+    "deployments": [
+        {
+            "inputs": [
+                {
+                    "default": "/tmp",
+                    "type": "String",
+                    "name": "TEST_PATH",
+                    "value": "/tmp",
+                    "description": "Test path location."
+                },
+                {
+                    "default": "a value",
+                    "type": "String",
+                    "name": "TEST_VALUE",
+                    "value": "an value",
+                    "description": "Test value."
+                },
+                {
+                    "type": "String",
+                    "name": "deploy_server_id",
+                    "value": "916255c9-1b97-4cce-a4d5-ff1d35196d6b",
+                    "description": "ID of the server being deployed to"
+                },
+                {
+                    "type": "String",
+                    "name": "deploy_action",
+                    "value": "CREATE",
+                    "description": "Name of the current action being deployed"
+                },
+                {
+                    "type": "String",
+                    "name": "deploy_stack_id",
+                    "value": "stack_name",
+                    "description": "ID of the stack this deployment belongs to"
+                },
+                {
+                    "type": "String",
+                    "name": "deploy_resource_name",
+                    "value": "deployment",
+                    "description": "Name of this deployment resource in the stack"
+                },
+                {
+                    "type": "String",
+                    "name": "deploy_signal_transport",
+                    "value": "NO_SIGNAL",
+                    "description": "How the server should signal to heat with the deployment output values."
+                }
+            ],
+            "group": "Web::Babashka",
+            "name": "10-test",
+            "outputs": [
+                {
+                    "type": "Boolean",
+                    "name": "os_heat_agent_is_error",
+                    "error_output": true,
+                    "description": "Did the job fail?"
+                }
+            ],
+            "creation_time": "2023-10-08T22:04:51Z",
+            "id": "49b0a610-b272-4ff6-ab05-bc3baa9f91c0",
+            "config": {
+                "function": "test.function",
+                "variable_file": "test.sh"
+            },
+            "options": {
+                "os_heat_agent_tool": "/usr/bin/bash",
+                "os_heat_agent_serialize": true
+            }
+        }
+    ],
+    "os-collect-config": {
+        "cfn": {
+            "stack_name": "stack_name",
+            "metadata_url": "https://metadata.url/v1/",
+            "access_key_id": "",
+            "secret_access_key": "",
+            "path": "server.Metadata"
+        },
+        "collectors": [
+            "ec2",
+            "cfn",
+            "local"
+        ]
+    }
+}

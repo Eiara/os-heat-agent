@@ -3,7 +3,7 @@ required_version = "~> 1.1"
   required_providers {
     openstack = {
       source  = "terraform-provider-openstack/openstack"
-      version = ">= 1.5"
+      version = ">= 1.49.0"
     }
   }
 }

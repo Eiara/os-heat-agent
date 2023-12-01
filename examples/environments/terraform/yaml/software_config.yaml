@@ -126,7 +126,7 @@ resources:
         - port: {get_resource: instance_port}
       image: {get_param: image_id}
       user_data_format: SOFTWARE_CONFIG
-      user_data: { get_resource: cloud_init }
+      user_data: {get_resource: cloud_init}
   instance_port:
       type: OS::Neutron::Port
       properties:

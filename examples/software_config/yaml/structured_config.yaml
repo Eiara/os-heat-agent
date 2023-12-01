@@ -82,7 +82,24 @@ resources:
           - [ systemctl, start, nginx ]
           - [ systemctl, start, os-heat-agent ]
           - [ systemctl, enable, os-heat-agent ]
-  config:
+  installer_config:
+    type: "OS::Heat::StructuredConfig"
+    properties:
+      group: babashka/web
+      config:
+        command: nginx.install
+      # No inputs needed for this
+      # inputs:
+      outputs:
+        # Required
+        - name: "os_heat_agent_is_error"
+          description: "Did the job fail?"
+          type: Boolean
+          error_output: true
+      options:
+        os_heat_agent_serialization_path: /etc/babashka/personality.sh
+        
+  readiness_config:
     type: "OS::Heat::SoftwareConfig"
     properties:
       config: |
@@ -107,7 +124,7 @@ resources:
           description: "Did the job fail?"
           type: Boolean
           error_output: true
-  deployment:
+  readiness_deployment:
     type: OS::Heat::SoftwareDeployment
     properties:
       server: { get_resource: server }
@@ -115,6 +132,13 @@ resources:
       config: { get_resource: config }
       input_values:
         envar_url: http://localhost:80/
+      signal_transport: CFN_SIGNAL
+  installer_deployment:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      server: { get_resource: server }
+      actions: ["CREATE", "UPDATE"]
+      config: { get_resource: installer_config }
       signal_transport: CFN_SIGNAL
   server:
     type: OS::Nova::Server
