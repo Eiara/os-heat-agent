@@ -8,6 +8,7 @@ import time
 from os_heat_agent import deployments
 from os_heat_agent.heat import get_config
 from os_heat_agent.config import config
+import configparser
 
 import logging
 import structlog
@@ -81,17 +82,19 @@ def main(config_file, init_file, fetch_region, log_level):
   # Now, we want to initialize all our deployment handlers, disable any
   #   that aren't enabled, and log out which ones _are_ enabled.
   #   If none are enabled, we should error out.
-  
+  enabled_tools = {}
   for name, module in deployments.TOOLS.items():
     try:
       module.init()
-    except configparser.NoSectionError:
+      tools[name] = module
+    except (configparser.NoSectionError, KeyError):
       # Module isn't configured, therefore should be disabled
-      del(deployments.TOOLS, name)
       log.debug("Disabling tool %s", name)
     except FileNotFoundError as e:
       log.fatal(str(e))
       sys.exit(1)
+  
+  deployments.TOOLS = enabled_tools
   
   log.info("Enabled runners: %s", list(deployments.TOOLS.keys()))
   
