@@ -3,6 +3,7 @@ import click
 import requests, json
 import os, sys
 import time
+import copy
 
 # from os_heat_agent.deployments import get_deployment
 from os_heat_agent import deployments
@@ -126,7 +127,7 @@ def main(config_file, init_file, fetch_region, log_level):
     
     if new_config["deployments"] != current_config["deployments"]:
       for deployment in new_config["deployments"]:
-        dep = deployments.get_deployment(deployment)
+        dep = deployments.get_deployment(copy.deepcopy(deployment))
         response = dep.run()
         resp = {
           "deploy_stdout": response.stdout,
