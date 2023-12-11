@@ -117,7 +117,13 @@ def main(config_file, init_file, fetch_region, log_level):
     else:
       with open(cache_file) as fh:
         # current config becomes the cached file
-        current_config = json.loads(fh.read())
+        try:
+          current_config = json.loads(fh.read())
+        except json.decoder.JSONDecodeError:
+          # assume the current config is empty, and continue from there.
+          log.error("Could not load cache file %s; defaulting to first run.", cache_file)
+          with open(init_file) as fh:
+            current_config = json.loads(fh.read())
     
     # Fetch new config
     # Hmm
@@ -129,6 +135,7 @@ def main(config_file, init_file, fetch_region, log_level):
       for deployment in new_config["deployments"]:
         dep = deployments.get_deployment(copy.deepcopy(deployment))
         response = dep.run()
+        # Assemble the deployment signal response
         resp = {
           "deploy_stdout": response.stdout,
           "deploy_stderr": response.stderr,
