@@ -8,6 +8,13 @@ def load_file(request):
   #   fixture load since that'd be ridiculous
   with open(f"tests/fixtures/openstack/structured_config/{request.param}") as fh:
     return json.loads(fh.read())
+
+@pytest.fixture(scope="function")
+def load_heat_fixture(request):
+  # Parameterized to make this not require writing multiple versions of the
+  #   fixture load since that'd be ridiculous
+  with open(f"tests/fixtures/openstack/{request.param}") as fh:
+    return json.loads(fh.read())
     
 @pytest.fixture
 def init_config():

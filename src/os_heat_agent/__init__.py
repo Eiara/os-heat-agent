@@ -86,7 +86,7 @@ def main(config_file, init_file, fetch_region, log_level):
   for name, module in deployments.TOOLS.items():
     try:
       module.init()
-      tools[name] = module
+      enabled_tools[name] = module
     except (configparser.NoSectionError, KeyError):
       # Module isn't configured, therefore should be disabled
       log.debug("Disabling tool %s", name)
@@ -127,7 +127,16 @@ def main(config_file, init_file, fetch_region, log_level):
     if new_config["deployments"] != current_config["deployments"]:
       for deployment in new_config["deployments"]:
         dep = deployments.get_deployment(deployment)
-        resp = dep.run()
+        response = dep.run()
+        resp = {
+          "deploy_stdout": response.stdout,
+          "deploy_stderr": response.stderr,
+          "deploy_status_code": str(response.exit_code)
+        }
+        
+        if response.exit_code != 0:
+          logger.debug("Reporting error")
+          resp["os_heat_agent_is_error"] = True
         dep.signal(resp)
     
     # Save the cached file out

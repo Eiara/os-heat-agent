@@ -24,6 +24,8 @@ from . import RunnerError, Output
 
 logger = structlog.getLogger(__name__)
 
+SUPPORTED_CONFIGS = ["SoftwareConfig","StructuredConfig","SoftwareComponent"]
+
 enabled_runners = {}
 
 known_modifiers = {
@@ -33,6 +35,10 @@ known_modifiers = {
 
 class NoEnabledRunners(RunnerError): pass
 class MissingRunner(RunnerError): pass
+
+@public
+def supports(runner: str) -> bool:
+  return runner in SUPPORTED_CONFIGS
 
 @public
 def init() -> None:
@@ -71,7 +77,7 @@ def init() -> None:
     raise NoEnabledRunners("No enabled shell runners.")
 
 @public
-def normalize(data: dict) -> dict:
+def normalize(data: dict, options: dict = {}) -> dict:
   """Validate and normalize the data from OpenStack.
   
   Args:
@@ -86,12 +92,12 @@ def normalize(data: dict) -> dict:
     RunnerError: if the command has not been defined.
   """
   
-  if not data.get("group", None):
-    raise MissingRunner("No defined group.")
-  
   global enabled_runners
-  if not isinstance(data["group"], list):
-    raise MissingRunner(f"Runner {data['group']} is not a list.")
+  try:
+    if not isinstance(data["group"], list):
+      raise MissingRunner(f"Runner {data['group']} is not a list.")
+  except KeyError:
+    raise MissingRunner("No defined group.")
     
   if data["group"][0] not in enabled_runners:
     raise MissingRunner(f"Runner {data['group'][0]} not enabled.")

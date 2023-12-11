@@ -4,8 +4,10 @@ import requests
 import tempfile
 import subprocess
 import structlog as logging
+from pathlib import Path
 
-from .runners import babashka, shell, Output
+from .runners import babashka, shell, legacy, Output
+
 from .errors import *
 
 logger = logging.getLogger(__name__)
@@ -13,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 TOOLS = {
   "babashka": babashka,
-  "shell":    shell
+  "shell":    shell,
 }
 
 # Schemas!
@@ -84,6 +86,10 @@ class Deployment(ABC):
     #   the first member to be the name of the tool, and the second value to
     #   be any arguments to the runner, if needed.
     self._tool = [t.lower() for t in tooling[1:]]
+    
+    # This uses the Shell runner to handle the legacy style of SoftwareConfig,
+    #   since it was relatively easy to adapt the Shell runner to work in the
+    #   expected way.
         
     # Now is when we can make some validity assertions about our 
     # inputs and outputs, since we control the spec that gets asserted for 
@@ -91,6 +97,16 @@ class Deployment(ABC):
     
     self._outputs = data.get("outputs", {})
     self._options = data.get("options", {})
+    
+    self.normalize()
+  
+  @abstractmethod
+  def normalize(self) -> None:
+    pass
+  
+  @property
+  def inputs(self):
+    return self._passthrough_inputs
   
   def validate(self) -> bool:
     """
@@ -191,12 +207,12 @@ class Deployment(ABC):
     #   important later.
     # If it's heat::ungrouped, we should throw an error as well.
     # return self._options["os_heat_agent_tool"]
-    
-    if self._data["group"] == "Heat::Ungrouped":
-      # os_heat_agent_tool needs to be set, which will be enforced by the init
-      # check for required options.
-      return self._options["os_heat_agent_tool"]
-    
+    # 
+    # if self._data["group"] == "Heat::Ungrouped":
+    #   # os_heat_agent_tool needs to be set, which will be enforced by the init
+    #   # check for required options.
+    #   return self._options["os_heat_agent_tool"]
+    # 
     # So now we check for the mappings of tools we know about
     
     # Pull the group name off the top.
@@ -212,12 +228,61 @@ class Deployment(ABC):
     #   make use of a sub-group setup.
     #   Currently:
     #     - Shell
-    self._data["config"]["group"] = self._tool[1:]
+    # 
     
     return self._data["config"]
+    
   @property
   def inputs(self) -> dict:
     return self._passthrough_inputs
+    
+  def run(self) -> Output:
+    """
+    Run the configuration management.
+    Structured config expects to hand off to a runner to execute.
+    Currently supported runners are Shell and Babashka.
+    """
+    try:
+      runner = TOOLS[self.tool.lower()]
+    except KeyError:
+      logger.fatal("No such runner: ", self.tool.lower())
+      raise NoSuchRunner(self.tool.lower())
+    runner = TOOLS[self.tool]
+    
+    logger.debug("using tool %s" % self.tool)
+    
+    # Configuration data is always a string for a SoftwareConfig.
+    # Input options are expected to be environment variables.
+    
+    if not runner.supports(self.__class__.__name__):
+      raise NotImplementedError(f"Runner {self.tool} not supported by {self.__class__.__name__}")
+    
+    manifest = self.config
+    runner.pre(manifest, self.inputs)
+    response = runner.run(manifest, self.environment)
+    runner.post(manifest)
+    
+    logger.debug(response.stdout)
+    logger.debug(response.stderr)
+    logger.debug(response.exit_code)
+    
+    return response
+    
+    resp = {
+      "deploy_stdout": response.stdout,
+      "deploy_stderr": response.stderr,
+      "deploy_status_code": str(response.exit_code)
+    }
+    
+    if response.exit_code != 0:
+      logger.debug("Reporting error")
+      resp["os_heat_agent_is_error"] = True
+    
+    return resp
+    
+###
+###
+###
 
 class SoftwareConfig(Deployment):
   # required_fields = [
@@ -232,94 +297,144 @@ class SoftwareConfig(Deployment):
     "os_heat_agent_serialize"
   ]
   
+  
+  def normalize(self) -> None:
+    data = {}
+    
+    if self._tool[0] == "ungrouped":
+      self._tool = ["shell", Path(self._options["os_heat_agent_tool"]).name]
+    
+    if isinstance(self._data["config"], dict):
+      return
+    # Command becomes
+    data["command"] = self._data["config"]
+    data["group"] = self._tool[1:]
+    data["serialize"] = self.should_serialize
+    self._data["config"] = data
+  
   @property
   def should_serialize(self) -> bool:
     try:
       return self._options["os_heat_agent_serialize"]
     except:
-      return false
-  
-  def run(self) -> dict:
-    # run the config!
-    tool = self.tool
+      return False
+      
     
-    logger.debug("using tool %s" % tool)
+  # def run(self) -> dict:
+  #   # run the config!
+  #   runner = TOOLS[self.tool]
+  #   
+  #   logger.debug("using tool %s" % tool)
+  #   
+  #   # Configuration data is always a string for a SoftwareConfig.
+  #   # Input options are expected to be environment variables.
+  #   
+  #   if not runner.supports(self.__class__.__name__):
+  #     raise NotImplementedError(f"Runner {self.tool} not supported by SoftwareConfig")
+  #   
+  #   manifest = self._data["config"]
+  #   runner.pre(manifest, self.input)
+  #   response = runner.run(manifest, self.environment)
+  #   runner.post(manifest)
+  #   
+  #   logger.debug(response.stdout)
+  #   logger.debug(response.stderr)
+  #   logger.debug(response.returncode)
+  #   
+  #   resp = {
+  #     "deploy_stdout": response.stdout,
+  #     "deploy_stderr": response.stderr,
+  #     "deploy_status_code": str(response.returncode)
+  #   }
+  #   
+  #   if response.returncode != 0:
+  #     logger.debug("Reporting error")
+  #     resp["os_heat_agent_is_error"] = True
+  #   
+  #   return resp
     
-    manifest = self._data["config"]
-    if self.should_serialize:
-      logger.debug("serializing config")
-      logger.debug(manifest)
-      # Write config out to disk and run it like that
-      serialised = tempfile.NamedTemporaryFile()
-      serialised.write(bytes(manifest, "utf-8"))
-      serialised.flush() # Write it to disk so that things can work as expected
-      manifest = serialised.name
-      logger.debug(serialised.name)
-    
-    env = self.environment
-    # Inject PATH into the subprocess call
-    # TODO: What else should we inject here
-    logger.debug(env)
-    env["PATH"] = os.environ["PATH"]
-    response = subprocess.run(
-      [tool, manifest], 
-      capture_output=True,
-      env=env,
-      # Treat output as pure text
-      text=True
-    )
-    if self.should_serialize:
-      # Deletes the file
-      # I guess the entire above could be done with a context manager instead
-      #   of like this. Hm.
-      serialised.close()
-    
-    logger.debug(response.stdout)
-    logger.debug(response.stderr)
-    logger.debug(response.returncode)
-    
-    resp = {
-      "deploy_stdout": response.stdout,
-      "deploy_stderr": response.stderr,
-      "deploy_status_code": str(response.returncode)
-    }
-    
-    if response.returncode != 0:
-      logger.debug("Reporting error")
-      resp["os_heat_agent_is_error"] = True
-    
-    return resp
-    
+    # if self.should_serialize:
+    #   logger.debug("serializing config")
+    #   logger.debug(manifest)
+    #   # Write config out to disk and run it like that
+    #   serialised = tempfile.NamedTemporaryFile()
+    #   serialised.write(bytes(manifest, "utf-8"))
+    #   serialised.flush() # Write it to disk so that things can work as expected
+    #   manifest = serialised.name
+    #   logger.debug(serialised.name)
+    # 
+    # env = self.environment
+    # # Inject PATH into the subprocess call
+    # # TODO: What else should we inject here
+    # logger.debug(env)
+    # env["PATH"] = os.environ["PATH"]
+    # response = subprocess.run(
+    #   [tool, manifest], 
+    #   capture_output=True,
+    #   env=env,
+    #   # Treat output as pure text
+    #   text=True
+    # )
+    # if self.should_serialize:
+    #   # Deletes the file
+    #   # I guess the entire above could be done with a context manager instead
+    #   #   of like this. Hm.
+    #   serialised.close()
+    # 
+    # logger.debug(response.stdout)
+    # logger.debug(response.stderr)
+    # logger.debug(response.returncode)
+    # 
+    # resp = {
+    #   "deploy_stdout": response.stdout,
+    #   "deploy_stderr": response.stderr,
+    #   "deploy_status_code": str(response.returncode)
+    # }
+    # 
+    # if response.returncode != 0:
+    #   logger.debug("Reporting error")
+    #   resp["os_heat_agent_is_error"] = True
+    # 
+    # return resp
+
+
+###
+###
+###
+
 class StructuredConfig(Deployment):
   
   # A structured config doesn't(?) require any agent options
   # required_options = []
   
+  def normalize(self) -> bool:
+    self._data["config"]["group"] = self._tool[1:]
+  
   def validate(self) -> bool:
     super().validate()
   
-  def run(self) -> Output:
-    """
-    Run the configuration management.
-    Structured config expects to hand off to a runner to execute.
-    Currently supported runners are Shell and Babashka.
-    """
-    try:
-      runner = TOOLS[self.tool.lower()]
-    except KeyError:
-      logger.fatal("No such runner: ", self.tool.lower())
-      raise NoSuchRunner(self.tool.lower())
-    
-    runner.pre(self.config, self.inputs)
-    resp = runner.run(self.config, self.environment)
-    # 
-    # try:
-    # except FileNotFoundError as e:
-    #   pass
-    # except RunnerError as e:
-    #   pass
-    runner.post(self.config)
-    return resp
+  # def run(self) -> Output:
+  #   """
+  #   Run the configuration management.
+  #   Structured config expects to hand off to a runner to execute.
+  #   Currently supported runners are Shell and Babashka.
+  #   """
+  #   try:
+  #     runner = TOOLS[self.tool.lower()]
+  #   except KeyError:
+  #     logger.fatal("No such runner: ", self.tool.lower())
+  #     raise NoSuchRunner(self.tool.lower())
+  #   
+  #   runner.pre(self.config, self.inputs)
+  #   resp = runner.run(self.config, self.environment)
+  #   # 
+  #   # try:
+  #   # except FileNotFoundError as e:
+  #   #   pass
+  #   # except RunnerError as e:
+  #   #   pass
+  #   runner.post(self.config)
+  #   return resp
 
 class SoftwareComponent(Deployment):
   # required_fields = [

@@ -3,13 +3,6 @@
         {
             "inputs": [
                 {
-                    "default": "value",
-                    "type": "String",
-                    "name": "variable",
-                    "value": "an_incoming_value",
-                    "description": "Some incoming value that is expected to be serialized for Babashka"
-                },
-                {
                     "type": "String",
                     "name": "deploy_server_id",
                     "value": "916255c9-1b97-4cce-a4d5-ff1d35196d6b",
@@ -40,7 +33,7 @@
                     "description": "How the server should signal to heat with the deployment output values."
                 }
             ],
-            "group": "Bad::Deployer",
+            "group": "Web::Shell::Bash",
             "name": "10-test",
             "outputs": [
                 {
@@ -50,11 +43,13 @@
                     "description": "Did the job fail?"
                 }
             ],
-            "config": {
-                "foo": "bar"
-            },
             "creation_time": "2023-10-08T22:04:51Z",
-            "id": "49b0a610-b272-4ff6-ab05-bc3baa9f91c0"
+            "id": "49b0a610-b272-4ff6-ab05-bc3baa9f91c0",
+            "config": "/usr/bin/touch /tmp/test_file",
+            "options": {
+                "os_heat_agent_tool": "/usr/bin/bash",
+                "os_heat_agent_serialize": false
+            }
         }
     ],
     "os-collect-config": {

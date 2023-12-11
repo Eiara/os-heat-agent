@@ -18,6 +18,8 @@ logger = structlog.getLogger(__name__)
 
 VARIABLES_PATH="/etc/babashka/variables"
 
+SUPPORTED_CONFIGS = ["StructuredConfig","SoftwareComponent"]
+
 class SerializerError(RunnerError): pass
 
 @public
@@ -66,6 +68,10 @@ def init_config() -> None:
     }
   })
 
+@public
+def supports(runner: str) -> bool:
+  return runner in SUPPORTED_CONFIGS
+
 @private
 def normalize(data: dict) -> bool:
   """Normalizes and validates the incoming OpenStack data
@@ -87,6 +93,9 @@ def normalize(data: dict) -> bool:
       directory do not exist.
     RunnerError: If the Babashka `function` has not been defined.
   """
+  
+  if not isinstance(data, dict):
+    raise NotImplementedError("Babashka runner requires StructuredConfig or SoftwareComponent")
   
   # Test if Babashka is actually installed where we think it is
   babashka = Path(config.get("tools.babashka","path"))
