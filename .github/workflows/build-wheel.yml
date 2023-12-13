@@ -1,0 +1,19 @@
+name: Build Wheel
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_wheel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: install pip
+        run: apt-get -y install python3-pip
+      - name: install Hatch
+        run: pip install hatch
+      - name: Hatch build
+        run: hatch build
