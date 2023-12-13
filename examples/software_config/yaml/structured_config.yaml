@@ -77,7 +77,7 @@ resources:
         runcmd:
           - [ mkdir, -p, /opt/os-heat-agent/ ]
           - [ apt-get, -y, --no-install-recommends, install, 'python3-pip']
-          - [ pip, install, git+https://github.com/Eiara/os-heat-agent.git]
+          - [ pip, install, git+https://github.com/Eiara/os-heat-agent.git@major-rebuild]
           - [ systemctl, daemon-reload ]
           - [ systemctl, start, nginx ]
           - [ systemctl, start, os-heat-agent ]

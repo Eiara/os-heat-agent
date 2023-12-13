@@ -29,7 +29,7 @@ variable "volume_size" {
   default = 10
 }
 
-variable "image_id" {
+variable "image_name" {
   type = string
 }
 

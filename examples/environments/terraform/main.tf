@@ -8,37 +8,44 @@ required_version = "~> 1.1"
   }
 }
 
+data "openstack_images_image_v2" "image" {
+  name        = var.image_name
+  most_recent = true
+}
+
+##
+## Networking
+##
+
+data "openstack_networking_network_v2" "public" {
+   name = var.public_network
+}
+
 resource "openstack_networking_floatingip_v2" "ip" {
   # This is Catalyst Cloud specific; maybe should be a variable
   pool = var.public_network
 }
 
-### Create the loadbalancer
-
-resource "openstack_lb_loadbalancer_v2" "loadbalancer" {
-  name          = "lb"
-  vip_subnet_id = var.subnet_id
+resource "openstack_networking_network_v2" "network" {
+  name           = "example_network"
+  admin_state_up = "true"
 }
 
-### HTTP listener, for redirecting to https
-
-resource "openstack_lb_listener_v2" "http" {
-  name            = "http-listener"
-  protocol        = "HTTP"
-  protocol_port   = 80
-  loadbalancer_id = openstack_lb_loadbalancer_v2.loadbalancer.id
+resource "openstack_networking_subnet_v2" "subnet" {
+  name       = "example_network_subnet"
+  network_id = openstack_networking_network_v2.network.id
+  cidr       = "192.168.199.0/24"
+  ip_version = 4
 }
 
-resource "openstack_lb_pool_v2" "http" {
-  name = "http"
-  # Speaks HTTP to the backends
-  #
-  protocol    = "HTTP"
-  lb_method   = "ROUND_ROBIN"
-  listener_id = openstack_lb_listener_v2.http.id
-  persistence {
-    type = "SOURCE_IP"
-  }
+resource "openstack_networking_router_v2" "router" {
+  name                = "example_router"
+  external_network_id = data.openstack_networking_network_v2.public.id
+}
+
+resource "openstack_networking_router_interface_v2" "router" {
+  router_id = openstack_networking_router_v2.router.id
+  subnet_id = openstack_networking_subnet_v2.subnet.id
 }
 
 ##
@@ -54,13 +61,12 @@ resource "openstack_orchestration_stack_v1" "stack" {
   parameters = {
     name             = var.name
     flavor           = var.flavor
-    image_id         = var.image_id
-    network_id       = var.network_id
-    subnet_id        = var.subnet_id
+    image_id         = data.openstack_images_image_v2.image.id
+    network_id       = openstack_networking_network_v2.network.id
+    subnet_id        = openstack_networking_subnet_v2.subnet.id
     key_name         = var.key_name
     security_groups  = join(",",var.security_groups)
     volume_size      = var.volume_size
-    lb_pool_id       = openstack_lb_pool_v2.http.id
     protocol_port    = 80
     ip_address        = openstack_networking_floatingip_v2.ip.id
     # TODO:

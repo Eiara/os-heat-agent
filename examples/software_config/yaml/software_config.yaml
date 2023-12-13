@@ -56,7 +56,8 @@ resources:
               
               Type=simple
               WorkingDirectory=/opt/os-heat-agent/
-              ExecStart=/usr/local/bin/os_heat_agent -l debug
+              # -r to have it auto-fetch the region
+              ExecStart=/usr/local/bin/os_heat_agent -l debug -r
               # Restart stuff
               
               Restart=always
@@ -66,6 +67,16 @@ resources:
               [Install]
               WantedBy=multi-user.target
             path: /lib/systemd/system/os-heat-agent.service
+          - content: |
+              [agent]
+              polling_interval = 60
+              init_file = /var/lib/heat-cfntools/cfn-init-data
+              [cache]
+              dir = /var/lib/heat-cfntools
+              filename = os-cfn-current
+              [tools.shell.runners]
+              bash = /bin/bash
+            path: /etc/os_heat_agent.ini
         package_update: true
         packages:
           - jq
@@ -77,13 +88,15 @@ resources:
         runcmd:
           - [ mkdir, -p, /opt/os-heat-agent/ ]
           - [ apt-get, -y, --no-install-recommends, install, 'python3-pip']
-          - [ pip, install, git+https://github.com/Eiara/os-heat-agent.git]
+          - [ pip, install, git+https://github.com/Eiara/os-heat-agent.git@major-rebuild]
           - [ systemctl, daemon-reload ]
           - [ systemctl, start, nginx ]
+          - [ systemctl, enable, nginx ]
           - [ systemctl, start, os-heat-agent ]
           - [ systemctl, enable, os-heat-agent ]
   config:
     type: "OS::Heat::SoftwareConfig"
+    group: Web::Shell::Bash
     properties:
       config: |
         #!/bin/bash

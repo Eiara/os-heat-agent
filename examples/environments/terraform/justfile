@@ -1,0 +1,5 @@
+apply:
+  terraform apply -auto-approve
+
+ssh:
+  ssh debian@`terraform output -raw ip`
