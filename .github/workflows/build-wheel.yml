@@ -5,13 +5,15 @@ on:
 
 jobs:
   build_wheel:
-    runs-on: debian-12
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-      - name: install pipx
-        run: apt-get -y install pipx
+      - name: install pip
+        run: apt-get -y install python3-pip
       - name: install Hatch
-        run: pipx install hatch
+        run: pip install hatch
+      - name: Hatch build
+        run: hatch build
