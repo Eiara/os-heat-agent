@@ -1,0 +1,17 @@
+{
+  "os-collect-config": {
+    "cfn": {
+      "stack_name": "stack_name",
+      "metadata_url": "https://metadata.url/v1/",
+      "path": "server.Metadata",
+      "secret_access_key": "",
+      "access_key_id": ""
+    },
+    "collectors": [
+      "ec2",
+      "cfn",
+      "local"
+    ]
+  },
+  "deployments": []
+}

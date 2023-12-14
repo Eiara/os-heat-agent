@@ -28,9 +28,6 @@ parameters:
   security_groups:
     type: comma_delimited_list
     label: List of security group IDs
-  lb_pool_id:
-    type: string
-    label: Load balancer pool to associate with
   protocol_port:
     type: number
     default: 80
@@ -44,6 +41,17 @@ resources:
     properties:
       cloud_config:
         write_files:
+          - content: |
+              #!/bin/bash
+              
+              export PIPX_BIN_DIR=/usr/local/bin
+              export PIPX_HOME=/opt/pipx
+              mkdir -p /opt/pipx
+              export PIPX_MAN_DIR=/usr/local/share/man
+              pipx install --include-deps git+https://github.com/Eiara/os-heat-agent.git@major-rebuild
+              pipx inject os_heat_agent boto3 click structlog atpublic requests
+            path: /root/install_os_heat_agent.sh
+            permissions: "0755"
           - content: |
               [Unit]
               Description=Openstack Heat Agent
@@ -77,27 +85,33 @@ resources:
               [tools.shell.runners]
               bash = /bin/bash
             path: /etc/os_heat_agent.ini
+          - content: |
+              APT::Install-Recommends "0";
+              APT::Install-Suggests "0"; 
+            path: /etc/apt/apt.conf.d/01-install.conf
         package_update: true
         packages:
           - jq
           - python-is-python3
-          - python3-boto3
+          # - python3-boto3
+          # - python3-click
+          # - python3-structlog
           - httpie
-          - python3-click
           - nginx
         runcmd:
           - [ mkdir, -p, /opt/os-heat-agent/ ]
-          - [ apt-get, -y, --no-install-recommends, install, 'python3-pip']
-          - [ pip, install, git+https://github.com/Eiara/os-heat-agent.git@major-rebuild]
+          - [ apt-get, -y, --no-install-recommends, install, 'pipx', 'git']
+          # - [ pipx, install, git+https://github.com/Eiara/os-heat-agent.git@major-rebuild]
+          - [ /root/install_os_heat_agent.sh ]
           - [ systemctl, daemon-reload ]
           - [ systemctl, start, nginx ]
           - [ systemctl, enable, nginx ]
-          - [ systemctl, start, os-heat-agent ]
-          - [ systemctl, enable, os-heat-agent ]
+          # - [ systemctl, start, os-heat-agent ]
+          # - [ systemctl, enable, os-heat-agent ]
   config:
     type: "OS::Heat::SoftwareConfig"
-    group: Web::Shell::Bash
     properties:
+      group: Web::Shell::Bash
       config: |
         #!/bin/bash
         code=0
@@ -128,7 +142,8 @@ resources:
       config: { get_resource: config }
       input_values:
         envar_url: http://localhost:80/
-      signal_transport: CFN_SIGNAL
+      # signal_transport: CFN_SIGNAL
+      signal_transport: NO_SIGNAL
   server:
     type: OS::Nova::Server
     properties:
@@ -147,14 +162,6 @@ resources:
         security_groups: {get_param: security_groups}
         fixed_ips:
           - subnet: {get_param: subnet_id}
-  pool_member:
-    type: OS::Octavia::PoolMember
-    depends_on: deployment
-    properties:
-      address: {get_attr: [instance_port, fixed_ips, 0, ip_address]}
-      pool: { get_param: lb_pool_id }
-      protocol_port: { get_param: protocol_port }
-      subnet: { get_param: subnet_id }
   associate:
     type: OS::Neutron::FloatingIPAssociation
     properties:
