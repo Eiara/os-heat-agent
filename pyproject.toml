@@ -12,9 +12,12 @@ description = "A small configurable agent for interacting with OpenStack Heat so
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
+    "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3",
-    # "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
+    "Environment :: OpenStack",
+    
 ]
 dependencies = [
   "boto3",
@@ -58,4 +61,18 @@ markers = [
 # 
 addopts = [
     "--import-mode=importlib",
+]
+
+# Exclude stuff that shouldn't be included
+
+[tool.hatch.build]
+exclude = [
+  ".github/", # Doesn't need the github details
+  ".envrc",   # direnv settings are not needed
+  ".git"      # Doesn't need the git tree
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+  "src/os_heat_agent"
 ]

@@ -1,0 +1,32 @@
+# Upload a release to PyPI when it's been cut.
+
+name: PyPI Publish
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  ship:
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+      url: https://pypi.org/p/os_heat_agent
+    # Enables GH Actions to write to PyPI for this package.
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install Hatch
+        run: pip install hatch
+      - name: Build package
+        run: hatch build
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@release/v1

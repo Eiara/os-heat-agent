@@ -5,3 +5,6 @@ terraform.tfstate*
 dist/
 __pycache__/
 *.tfvars
+.nova/
+.DS_Store
+.pytest_cache
