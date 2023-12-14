@@ -458,12 +458,6 @@ class SoftwareComponent(Deployment):
     pass
     
     
-class StructuredDeployment(Deployment):
-  """
-  A structured deployment binds multiple deployments to a 
-  """
-  def run(self):
-    pass
     
 ###
 ### 
