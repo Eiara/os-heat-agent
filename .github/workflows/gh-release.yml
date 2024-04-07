@@ -1,0 +1,49 @@
+# Create the GitHub release packages
+
+name: GitHub Release Publish Archives
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  ship_gh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install Hatch
+        run: pip install hatch
+      - name: Build package
+        run: hatch build
+      - name: version
+        run: echo "::set-output name=version::$(hatch version)"
+        id: version
+      - name: Get Current GH release
+        id: get_current_release
+        uses: joutvhu/get-release@v1
+        with:
+          debug: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Wheel
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_current_release.outputs.upload_url }}
+          asset_path: ./dist/os_heat_agent-${{steps.version.outputs.version}}-py3-none-any.whl
+          asset_name: os_heat_agent-${{steps.version.outputs.version}}-py3-none-any.whl
+          asset_content_type: application/zip
+      - name: Upload tarball
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_current_release.outputs.upload_url }}
+          asset_path: ./dist/os_heat_agent-${{steps.version.outputs.version}}.tar.gz
+          asset_name: os_heat_agent-${{steps.version.outputs.version}}.tar.gz
+          asset_content_type: application/gzip

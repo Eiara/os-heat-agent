@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "os_heat_agent"
-version = "0.1.0"
+dynamic = ["version"]
 authors = [
   { name="Aurynn Shaw", email="aurynn@eiara.nz" },
 ]
@@ -38,6 +38,9 @@ os_heat_agent = "os_heat_agent:main"
 [tool.hatch.envs.default]
 platforms = ["linux", "macos"]
 
+[tool.hatch.version]
+path = "src/os_heat_agent/version.py"
+
 
 [tool.hatch.envs.test]
 platforms = ["linux", "macos"]
@@ -69,7 +72,10 @@ addopts = [
 exclude = [
   ".github/", # Doesn't need the github details
   ".envrc",   # direnv settings are not needed
-  ".git"      # Doesn't need the git tree
+  ".git",     # Doesn't need the git tree
+  "tests",    # Doesn't need tests
+  # Explicitly leaving docs and examples in, so that they can be installed on
+  # the system, so that users have access to the docs as they need.
 ]
 
 [tool.hatch.build.targets.wheel]
