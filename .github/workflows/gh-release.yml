@@ -1,10 +1,12 @@
 # Create the GitHub release packages
 
-name: GitHub Release Publish Archives
+name: On GitHub release, add Python distributions to release
 
 on:
   release:
-    types: [created]
+    types:
+      - published
+      - released
   workflow_dispatch:
 
 jobs:
