@@ -31,11 +31,9 @@ jobs:
         id: version
       - name: Get Current GH release
         id: get_current_release
-        uses: joutvhu/get-release@v1
-        with:
-          debug: true
+        uses: bruceadams/get-release@v1.3.2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Upload Wheel
         uses: actions/upload-release-asset@v1
         env:
