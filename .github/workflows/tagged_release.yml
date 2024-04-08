@@ -3,7 +3,9 @@ name: Release from tag push
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+(alpha|rc)[0-9]+"
+      # Constrain tags, so that v1.0.0alph0 doesn't match as v1.0.0 unintentionally
+      - "^v[0-9]+.[0-9]+.[0-9]+(alpha|rc)[0-9]+$"
+      - "^v[0-9]+.[0-9]+.[0-9]+$"
 
 jobs:
   release:
@@ -20,3 +22,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           body: ${{steps.github_release.outputs.changelog}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
