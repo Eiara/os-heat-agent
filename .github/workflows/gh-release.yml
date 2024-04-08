@@ -17,7 +17,18 @@ jobs:
   ship_gh:
     runs-on: ubuntu-latest
     steps:
+      - name: Get Current GH release
+        id: get_current_release
+        uses: joutvhu/get-release@v1
+        with:
+          debug: true
+          latest: true
+          throwing: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.get_current_release.outputs.tag_name }}
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -29,11 +40,6 @@ jobs:
       - name: version
         run: echo "::set-output name=version::$(hatch version)"
         id: version
-      - name: Get Current GH release
-        id: get_current_release
-        uses: bruceadams/get-release@v1.3.2
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
       - name: Upload Wheel
         uses: actions/upload-release-asset@v1
         env:
