@@ -1,6 +1,6 @@
 # Upload a release to PyPI when it's been cut.
 
-name: PyPI Publish
+# name: PyPI Publish
 
 # on:
 #   release:
