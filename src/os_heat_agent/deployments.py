@@ -245,11 +245,11 @@ class Deployment(ABC):
     try:
       runner = TOOLS[self.tool.lower()]
     except KeyError:
-      logger.fatal("No such runner: ", self.tool.lower())
+      logger.fatal("No such runner: %s", self.tool.lower())
       raise NoSuchRunner(self.tool.lower())
     runner = TOOLS[self.tool]
     
-    logger.debug("using tool %s" % self.tool)
+    logger.debug("using tool %s", self.tool)
     
     # Configuration data is always a string for a SoftwareConfig.
     # Input options are expected to be environment variables.

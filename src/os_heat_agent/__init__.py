@@ -134,18 +134,34 @@ def main(config_file, init_file, fetch_region, log_level):
     if new_config["deployments"] != current_config["deployments"]:
       for deployment in new_config["deployments"]:
         dep = deployments.get_deployment(copy.deepcopy(deployment))
-        response = dep.run()
-        # Assemble the deployment signal response
+        response = None
         resp = {
-          "deploy_stdout": response.stdout,
-          "deploy_stderr": response.stderr,
-          "deploy_status_code": str(response.exit_code)
+          "deploy_stdout": "",
+          "deploy_stderr": "",
+          "deploy_status_code": "",
+          "os_heat_agent_is_error": False
         }
-        
-        if response.exit_code != 0:
-          logger.debug("Reporting error")
+        try:
+          # Try to generate a response
+          response = dep.run()
+        except Exception as e:
+          log.error(e)
+          resp["deploy_stderr"] = str(e)
           resp["os_heat_agent_is_error"] = True
-        dep.signal(resp)
+          resp["deploy_status_code"] = str(-254)
+        else:
+          # This part runs on success
+          resp["deploy_stdout"] = response.stdout
+          resp["deploy_stderr"] = response.stderr
+          resp["deploy_status_code"] = str(response.exit_code)
+          
+          if response.exit_code != 0:
+            log.debug("Reporting error")
+            resp["os_heat_agent_is_error"] = True
+        finally:
+          # This part always runs
+          dep.signal(resp)
+        
     
     # Save the cached file out
     with open(cache_file, "w") as fh:
