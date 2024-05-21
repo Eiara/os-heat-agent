@@ -156,7 +156,7 @@ def main(config_file, init_file, fetch_region, log_level):
           
           if response.exit_code != 0:
             log.debug("Reporting error")
-            resp["os_heat_agent_is_error"] = True
+            resp["os_heat_agent_is_error"] = response.stderr
         finally:
           # This part always runs
           dep.signal(resp)
