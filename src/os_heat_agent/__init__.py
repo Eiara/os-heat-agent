@@ -138,8 +138,7 @@ def main(config_file, init_file, fetch_region, log_level):
         resp = {
           "deploy_stdout": "",
           "deploy_stderr": "",
-          "deploy_status_code": "",
-          "os_heat_agent_is_error": False
+          "deploy_status_code": ""
         }
         try:
           # Try to generate a response
@@ -147,7 +146,7 @@ def main(config_file, init_file, fetch_region, log_level):
         except Exception as e:
           log.error(e)
           resp["deploy_stderr"] = str(e)
-          resp["os_heat_agent_is_error"] = True
+          resp["os_heat_agent_is_error"] = str(e)
           resp["deploy_status_code"] = str(-254)
         else:
           # This part runs on success
