@@ -1,6 +1,6 @@
 ## os-heat-agent
 
-OS Heat Agent is a small agent program intended to interface with the OS::Heat::SoftwareComponent, OS::Heat::SoftwareConfig, OS::Heat::SoftwareDeployment, OS::Heat::SoftwareDeploymentGroup,  OS::Heat::StructuredConfig, OS::Heat::StructuredDeployment, and OS::Heat::StructuredDeploymentGroup resources in OpenStack Heat.
+OS Heat Agent is a small agent program intended to interface with the `OS::Heat::SoftwareComponent`, `OS::Heat::SoftwareConfig`, `OS::Heat::SoftwareDeployment`, `OS::Heat::SoftwareDeploymentGroup`,  `OS::Heat::StructuredConfig`, `OS::Heat::StructuredDeployment`, and `OS::Heat::StructuredDeploymentGroup` resources in OpenStack Heat.
 
 This agent provides different interfaces for SoftwareConfig, SoftwareComponent, and StructuredConfig resources, as these have different configuration inputs.
 

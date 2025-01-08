@@ -1,7 +1,9 @@
 import click
 # import configparser
-import requests, json
-import os, sys
+import requests
+import json
+import os
+import sys
 import time
 import copy
 

@@ -15,7 +15,12 @@ def load_heat_fixture(request):
   #   fixture load since that'd be ridiculous
   with open(f"tests/fixtures/openstack/{request.param}") as fh:
     return json.loads(fh.read())
-    
+
+@pytest.fixture(scope="function")
+def load_heat_stack_response(request):
+  with open(f"tests/fixtures/openstack/StackComponent/{request.param}") as fh:
+    return json.loads(fh.read())
+
 @pytest.fixture
 def init_config():
   config.clear()
@@ -34,7 +39,7 @@ def init_config():
       },
   })
   return config
-  
+
 @pytest.fixture
 def init_config_babashka(set_config):
   config.read_dict({

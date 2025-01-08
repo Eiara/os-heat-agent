@@ -43,7 +43,7 @@ def cleanup_files():
   os.unlink(p)
 
 def test_pre_no_file(set_config):
-  assert False == babashka.pre(
+  assert not babashka.pre(
       data={},
       input={}
     )

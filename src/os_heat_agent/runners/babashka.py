@@ -20,7 +20,8 @@ VARIABLES_PATH="/etc/babashka/variables"
 
 SUPPORTED_CONFIGS = ["StructuredConfig","SoftwareComponent"]
 
-class SerializerError(RunnerError): pass
+class SerializerError(RunnerError): 
+  pass
 
 @public
 def init() -> None:

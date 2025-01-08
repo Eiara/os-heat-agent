@@ -1,0 +1,23 @@
+{
+ "StackResourceDetail": {
+  "StackName": "test-stack",
+  "StackId": "arn:openstack:heat::c44e5770fafeb4b5e066e4743a088e57704294bf:stacks/test-stack",
+  "LogicalResourceId": "server",
+  "PhysicalResourceId": "f131552f-d076-4fe9-910e-8556fcfd313a",
+  "ResourceType": "OS::Nova::Server",
+  "LastUpdatedTimestamp": "2024-12-16T23:32:24+00:00",
+  "ResourceStatus": "CREATE_COMPLETE",
+  "ResourceStatusReason": "state changed",
+  "Description": "",
+  "Metadata": "{\"os-collect-config\": {\"cfn\": {\"stack_name\": \"test-stack\", \"metadata_url\": \"https://metadata.url/v1/\", \"path\": \"server.Metadata\", \"secret_access_key\": \"asdfghjkl\", \"access_key_id\": \"qwertyuiop\"}, \"collectors\": [\"ec2\", \"cfn\", \"local\"]}, \"deployments\": [{\"inputs\": [{\"default\": 0, \"type\": \"String\", \"name\": \"A_VALUE\", \"value\": \"test stack value\", \"description\": \"\"}, {\"type\": \"String\", \"name\": \"deploy_server_id\", \"value\": \"5f8ef7a0-b152-48db-b259-7b92a889a437\", \"description\": \"ID of the server being deployed to\"}, {\"type\": \"String\", \"name\": \"deploy_action\", \"value\": \"CREATE\", \"description\": \"Name of the current action being deployed\"}, {\"type\": \"String\", \"name\": \"deploy_stack_id\", \"value\": \"test-stack\", \"description\": \"ID of the stack this deployment belongs to\"}, {\"type\": \"String\", \"name\": \"deploy_resource_name\", \"value\": \"zxcvbnmhjkl\", \"description\": \"Name of this deployment resource in the stack\"}, {\"type\": \"String\", \"name\": \"deploy_signal_transport\", \"value\": \"CFN_SIGNAL\", \"description\": \"How the server should signal to heat with the deployment output values.\"}, {\"type\": \"String\", \"name\": \"deploy_signal_id\", \"value\": \"https://test_stack.url/complete\", \"description\": \"ID of signal to use for signaling output values\"}, {\"type\": \"String\", \"name\": \"deploy_signal_verb\", \"value\": \"POST\", \"description\": \"HTTP verb to use for signaling output values\"}], \"group\": \"Web::Babashka\", \"name\": \"10-babashka\", \"outputs\": [{\"type\": \"String\", \"name\": \"os_heat_agent_is_error\", \"error_output\": true, \"description\": \"Did the job fail?\"}], \"creation_time\": \"2024-12-16T23:33:51Z\", \"id\": \"db4a8856-3905-4ba6-8fa7-5b2dc2fa8583\", \"config\": {\"function\": \"deploy\", \"directory\": \"/etc/babashka/local\", \"variable_file\": \"orchestration.sh\"}, \"options\": {}}]}"
+ },
+ "ResponseMetadata": {
+  "HTTPStatusCode": 200,
+  "HTTPHeaders": {
+   "content-type": "application/xml; charset=UTF-8",
+   "content-length": "3565",
+   "date": "Wed, 18 Dec 2024 21:38:18 GMT"
+  },
+  "RetryAttempts": 0
+ }
+}

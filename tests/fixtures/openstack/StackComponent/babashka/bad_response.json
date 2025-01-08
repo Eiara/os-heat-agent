@@ -1,0 +1,23 @@
+{
+ "StackResourceDetail": {
+  "StackName": "test-stack",
+  "StackId": "arn:openstack:heat::c44e5770fafeb4b5e066e4743a088e57704294bf:stacks/test-stack",
+  "LogicalResourceId": "server",
+  "PhysicalResourceId": "f131552f-d076-4fe9-910e-8556fcfd313a",
+  "ResourceType": "OS::Nova::Server",
+  "LastUpdatedTimestamp": "2024-12-16T23:32:24+00:00",
+  "ResourceStatus": "CREATE_COMPLETE",
+  "ResourceStatusReason": "state changed",
+  "Description": "",
+  "Metadata": "asdfasdfasdf"
+ },
+ "ResponseMetadata": {
+  "HTTPStatusCode": 503,
+  "HTTPHeaders": {
+   "content-type": "application/xml; charset=UTF-8",
+   "content-length": "3565",
+   "date": "Wed, 18 Dec 2024 21:38:18 GMT"
+  },
+  "RetryAttempts": 0
+ }
+}
