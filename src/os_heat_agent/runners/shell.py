@@ -33,8 +33,10 @@ known_modifiers = {
   "python": "-e"
 }
 
-class NoEnabledRunners(RunnerError): pass
-class MissingRunner(RunnerError): pass
+class NoEnabledRunners(RunnerError):
+  pass
+class MissingRunner(RunnerError):
+  pass
 
 @public
 def supports(runner: str) -> bool:

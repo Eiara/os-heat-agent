@@ -4,7 +4,8 @@ from public import public
 from ..errors import AgentError
 
 @public
-class RunnerError(AgentError): pass
+class RunnerError(AgentError): 
+  pass
 
 # some kind of registration system here? something to load in files and map
 # them against the incoming "what is a tool even" system.

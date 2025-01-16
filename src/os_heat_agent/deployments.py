@@ -6,9 +6,9 @@ import subprocess
 import structlog as logging
 from pathlib import Path
 
-from .runners import babashka, shell, legacy, Output
+from .runners import babashka, shell, Output
 
-from .errors import *
+from .errors import MissingInputs, MissingOutputs, NoSuchRunner
 
 logger = logging.getLogger(__name__)
 # logger.addHandler(logging.NullHandler())
@@ -104,9 +104,6 @@ class Deployment(ABC):
   def normalize(self) -> None:
     pass
   
-  @property
-  def inputs(self):
-    return self._passthrough_inputs
   
   def validate(self) -> bool:
     """
@@ -316,7 +313,7 @@ class SoftwareConfig(Deployment):
   def should_serialize(self) -> bool:
     try:
       return self._options["os_heat_agent_serialize"]
-    except:
+    except KeyError:
       return False
       
     
@@ -465,12 +462,12 @@ class SoftwareComponent(Deployment):
 
 def get_deployment(data: dict) -> Deployment:
   
-  if type(data["config"]) == str:
+  if type(data["config"]) is str:
     # It's an OS::Heat::SoftwareConfig
     return SoftwareConfig(data)
-  elif type(data["config"]) == dict:
+  elif type(data["config"]) is dict:
     # It could be one of two things ...
-    if type(data.get("configs", None)) == list:
+    if type(data.get("configs", None)) is list:
       # It's an OS::Heat::SoftwareComponent
       return SoftwareComponent(data)
     else:
