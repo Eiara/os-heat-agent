@@ -48,7 +48,7 @@ resources:
               export PIPX_HOME=/opt/pipx
               mkdir -p /opt/pipx
               export PIPX_MAN_DIR=/usr/local/share/man
-              pipx install --include-deps git+https://github.com/Eiara/os-heat-agent.git@major-rebuild
+              pipx install --include-deps git+https://github.com/Eiara/os-heat-agent.git@v1.0.0rc3
               pipx inject os_heat_agent boto3 click structlog atpublic requests
             path: /root/install_os_heat_agent.sh
             permissions: "0755"
@@ -101,9 +101,9 @@ resources:
         runcmd:
           - [ mkdir, -p, /opt/os-heat-agent/ ]
           - [ apt-get, -y, --no-install-recommends, install, 'pipx', 'git']
-          # - [ pipx, install, git+https://github.com/Eiara/os-heat-agent.git@major-rebuild]
-          - [ /root/install_os_heat_agent.sh ]
+          - [ /bin/bash, /root/install_os_heat_agent.sh ]
           - [ systemctl, daemon-reload ]
+          - [ systemctl, start, os-heat-agent ]
           - [ systemctl, start, nginx ]
           - [ systemctl, enable, nginx ]
           # - [ systemctl, start, os-heat-agent ]
@@ -143,7 +143,9 @@ resources:
       input_values:
         envar_url: http://localhost:80/
       # signal_transport: CFN_SIGNAL
-      signal_transport: NO_SIGNAL
+      # signal_transport: NO_SIGNAL
+      signal_transport: TEMP_URL_SIGNAL
+      # signal_transport: HEAT_SIGNAL
   server:
     type: OS::Nova::Server
     properties:

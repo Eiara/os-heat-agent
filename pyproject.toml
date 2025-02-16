@@ -17,7 +17,7 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
     "Environment :: OpenStack",
-    
+
 ]
 dependencies = [
   "boto3",
@@ -46,7 +46,10 @@ path = "src/os_heat_agent/version.py"
 platforms = ["linux", "macos"]
 template = "default"
 extra-dependencies = [
-  "pytest"
+  "pytest",
+  "subprocess-mock",
+  "requests-mock",
+  # "boto3-mocking"
 ]
 [tool.hatch.envs.test.scripts]
 # by default, disable integration tests
@@ -59,9 +62,9 @@ all = 'pytest -v'
 markers = [
   "integration: marks tests as integration tests, not run by default."
 ]
-# So we can use the same-named files and functions in different directories, 
+# So we can use the same-named files and functions in different directories,
 #   which otherwise doesn't work for historic reasons
-# 
+#
 addopts = [
     "--import-mode=importlib",
 ]
