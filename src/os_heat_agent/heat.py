@@ -5,6 +5,16 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+# Jan 17, 2025
+# This function uses boto3 instead of the OpenStack APIs as it is unclear, at 
+#   time of writing, how to fetch the current deployment information.
+
+# Explicitly does not perform any error checking on the JSON blob, expects the
+#   caller to handle any errors that come back.
+# Expected errrors:
+#   - JSONDecodeError
+#   - Whatever boto3 throws
+
 def get_config(cfn, region):
 
   session = boto3.session.Session()

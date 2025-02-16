@@ -12,6 +12,7 @@ from public import public, private
 #   its init value? so that it can be correctly configured? And then the test
 #   cases can pass in its own configuration value?
 from os_heat_agent.config import config
+from os_heat_agent.errors import MissingRuntimeError, ConfigurationError
 import structlog
 
 logger = structlog.getLogger(__name__)
@@ -41,7 +42,7 @@ def init() -> None:
   if not babashka.exists() or babashka.is_dir():
     # Babashka isn't installed, which we need to except on
     logger.error("Babashka not installed or incorrectly configured: %s", babashka.resolve())
-    raise FileNotFoundError("Babashka not installed or incorrectly configured: %s", babashka.resolve())
+    raise MissingRuntimeError("Babashka not installed or incorrectly configured: %s", babashka.resolve())
   
   # Validate the variables path stuff.
   variable_path = Path(config.get("tools.babashka", "variables"))
@@ -52,7 +53,7 @@ def init() -> None:
   
   if not variable_path.is_dir():
     logger.error("Babashka variables path %s is not a directory", variable_path.resolve())
-    raise FileNotFoundError(f"Babashka variables path {variable_path.resolve()} is not a directory")
+    raise ConfigurationError(f"Babashka variables path {variable_path.resolve()} is not a directory")
 
 @public
 def init_config() -> None:

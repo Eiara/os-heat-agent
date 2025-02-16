@@ -30,3 +30,4 @@ if ! [[ -e /usr/bin/mo ]]; then
 fi
 
 sudo mkdir /opt/babashka/local
+sudo mkdir /etc/babashka/variables

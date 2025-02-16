@@ -7,7 +7,7 @@ from os_heat_agent.config import config
 @pytest.mark.parametrize(
   "init_shell_config", 
   [
-    {"bash":"/bin/bash"},
+    {"bash":"/usr/bin/bash"},
   ],
   indirect=True
 )
@@ -27,7 +27,7 @@ def test_normalize_missing_tool(init_shell_config):
 @pytest.mark.parametrize(
   "init_shell_config", 
   [
-    {"bash":"/bin/bash"},
+    {"bash":"/usr/bin/bash"},
   ],
   indirect=True
 )
@@ -44,7 +44,7 @@ def test_normalize_bad_runner(init_shell_config):
 @pytest.mark.parametrize(
   "init_shell_config", 
   [
-    {"bash":"/bin/bash"},
+    {"bash":"/usr/bin/bash"},
   ],
   indirect=True
 )
@@ -65,7 +65,7 @@ def test_normalize_no_enabled_runner(init_shell_config):
 @pytest.mark.parametrize(
   "init_shell_config", 
   [
-    {"bash":"/bin/bash"},
+    {"bash":"/usr/bin/bash"},
   ],
   indirect=True
 )
@@ -85,7 +85,7 @@ def test_normalize_no_command(init_shell_config):
 @pytest.mark.parametrize(
   "init_shell_config", 
   [
-    {"bash":"/bin/bash"},
+    {"bash":"/usr/bin/bash"},
   ],
   indirect=True
 )
@@ -111,7 +111,7 @@ def test_pre_serializes(init_shell_config):
 @pytest.mark.parametrize(
   "init_shell_config", 
   [
-    {"bash":"/bin/bash"},
+    {"bash":"/usr/bin/bash"},
   ],
   indirect=True
 )
@@ -140,7 +140,7 @@ def test_post_closes(init_shell_config):
 @pytest.mark.parametrize(
   "init_shell_config", 
   [
-    {"bash":"/bin/bash"},
+    {"bash":"/usr/bin/bash"},
   ],
   indirect=True
 )
@@ -158,7 +158,7 @@ def test_command_serialized(init_shell_config):
 @pytest.mark.parametrize(
   "init_shell_config", 
   [
-    {"bash":"/bin/bash"},
+    {"bash":"/usr/bin/bash"},
   ],
   indirect=True
 )
@@ -172,7 +172,7 @@ def test_command_bare(init_shell_config):
   shell.pre(data, {})
   cmd = shell.command(data)
   expected = [
-    "/bin/bash",
+    "/usr/bin/bash",
     "-c",
     "/bin/ls -al /etc",
     # "-al",
@@ -187,7 +187,7 @@ def test_command_bare(init_shell_config):
 @pytest.mark.parametrize(
   "init_shell_config", 
   [
-    {"bash":"/bin/bash"},
+    {"bash":"/usr/bin/bash"},
   ],
   indirect=True
 )
@@ -210,7 +210,7 @@ def test_run_bare(init_shell_config):
 @pytest.mark.parametrize(
   "init_shell_config", 
   [
-    {"bash":"/bin/bash"},
+    {"bash":"/usr/bin/bash"},
   ],
   indirect=True
 )
@@ -235,7 +235,7 @@ def test_run_serialized(init_shell_config):
 @pytest.mark.parametrize(
   "init_shell_config", 
   [
-    {"bash":"/bin/bash"},
+    {"bash":"/usr/bin/bash"},
   ],
   indirect=True
 )

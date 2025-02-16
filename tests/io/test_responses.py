@@ -1,7 +1,9 @@
 import pytest
 from unittest import mock
+import requests_mock
 import boto3
 from os_heat_agent.heat import get_config
+from os_heat_agent import dynamically_fetch_region
 import json
 
 def MockCFNResource(**kwargs):
@@ -31,3 +33,8 @@ def test_good_response(mock_session_class, load_heat_stack_response):
     "path": "foo.bar"
   }
   get_config(cfg, "region")
+
+##
+## Test the dynamic region fetching code
+## 
+

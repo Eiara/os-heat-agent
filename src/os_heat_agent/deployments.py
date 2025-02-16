@@ -176,8 +176,17 @@ class Deployment(ABC):
     
     
     url = deploy_signal["value"]
-    # Default to POST.
-    verb = self._internal_inputs.get("deploy_signal_verb", {}).get("value", "POST")
+    # For TEMP_URL_SIGNAL and CFN_SIGNAL, Heat will tell us what HTTP verb
+    # we should be using.
+    # For TEMP_URL_SIGNAL, the verb is `PUT`
+    # For CFN_SIGNAL, the verb is `POST`.
+    # Feb 14, 2025: HEAT_SIGNAL is currently unimplemented, as this signalling
+    #   method requires calling the OpenStack APIs using through 
+    #   authenticating with KeyStone directly.
+    
+    # If we don't know what verb we should be using, POST might be a good
+    #   default.
+    verb = self._heat_inputs.get("deploy_signal_verb", {}).get("value", "POST")
     return requests.request(verb, url, json=payload)
     
   @property

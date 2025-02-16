@@ -1,7 +1,7 @@
 
 Vagrant.configure("2") do |config|
   # Change this to your supported box/architecture as needed.
-  config.vm.box = "generic/debian12-arm"
+  config.vm.box = "generic/ubuntu2404-arm"
   
   
   # Disable installing recommended programs with apt-get install

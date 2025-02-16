@@ -1,0 +1,25 @@
+{
+  "random_seed": "aRandomSeedValue",
+  "uuid": "98d04123-4ea6-4918-842f-524b44b7be53",
+  "availability_zone": "test-1a",
+  "keys": [
+    {
+      "data": "ssh-rsa ssh-key-data Generated-by-Nova",
+      "type": "ssh",
+      "name": "ssh-key-name"
+    }
+  ],
+  "hostname": "instance-name.novalocal",
+  "launch_index": 0,
+  "devices": [],
+  "meta": {
+    "meta": "data",
+    "a_true_value": "true",
+    "a_false_value": "false"
+  },
+  "public_keys": {
+    "ssh-key-name": "ssh-rsa ssh-key-data Generated-by-Nova"
+  },
+  "project_id": "eePhoh4aesheigh1fo1doh2eebaigha7OoyeeFie",
+  "name": "instance-name"
+}

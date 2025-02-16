@@ -3,6 +3,16 @@ import json
 from os_heat_agent.config import config
 
 @pytest.fixture(scope="function")
+def config_file(request):
+  return f"tests/fixtures/runtime/{request.param}"
+  
+
+@pytest.fixture(scope="function")
+def load_metadata(request):
+  with open(f"tests/fixtures/openstack/metadata/{request.param}") as fh:
+    return json.loads(fh.read()) 
+
+@pytest.fixture(scope="function")
 def load_file(request):
   # Parameterized to make this not require writing multiple versions of the
   #   fixture load since that'd be ridiculous
